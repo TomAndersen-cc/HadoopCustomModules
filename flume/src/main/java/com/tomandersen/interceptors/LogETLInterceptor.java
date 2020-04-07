@@ -6,6 +6,7 @@ import org.apache.flume.Event;
 import org.apache.flume.interceptor.Interceptor;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -57,15 +58,17 @@ public class LogETLInterceptor implements Interceptor {
 
     // 批量Event处理
     @Override
-    public List<Event> intercept(List<Event> events) {
+    public List<Event> intercept(final List<Event> events) {
+        // 创建用于返回的Event List
+        List<Event> newEventList = new ArrayList<>();
         // 直接使用单个Event处理方法
         for (Event event : events) {
             // 1.对每个Event采用单个Event拦截的方式进行处理
             Event processedEvent = intercept(event);
-            // 2.如果返回值为null,则将原始event从Event集合中清除
-            if (processedEvent == null) events.remove(event);
+            // 2.如果返回值为非null,则将原始event从添加到新的Event List中
+            if (processedEvent != null) newEventList.add(event);
         }
-        return events;
+        return newEventList;
     }
 
     @Override
