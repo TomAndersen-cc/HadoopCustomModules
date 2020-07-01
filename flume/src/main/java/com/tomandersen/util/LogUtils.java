@@ -1,10 +1,6 @@
 package com.tomandersen.util;
 
-import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang.math.NumberUtils;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * @Author TomAndersen
@@ -30,23 +26,25 @@ public final class LogUtils {
 
     // 校验事件日志格式(timestamp|json)是否正确
     public static boolean verifyEventLog(String log) {
-        // 1.判空
-        if (log == null) return false;
+        // 1 切割
+        String[] logContents = log.split("\\|");
 
-        // 2.切割字符串
-        String[] strings = log.split("\\|");
+        // 2 校验
+        if(logContents.length != 2){
+            return false;
+        }
 
-        // 3.获取当前系统时间
-        long current = new Date().getTime();
+        //3 校验服务器时间
+        if (logContents[0].length()!=13 || !NumberUtils.isDigits(logContents[0])){
+            return false;
+        }
 
-        // 4.判断时间戳是否合格
-        // 如果时间字符串长度不等于13 || 字符串不全为数字则返回false
-        if (strings[0].length() != 13 || NumberUtils.isDigits(strings[0])) return false;
-
-        // 5.简单判断json格式是否符合要求:如果开头或者结尾不包含"{"则返回false
-        if (!strings[1].trim().startsWith("{")
-                || !strings[1].trim().endsWith("}")) return false;
+        // 4 简单校验json格式
+        if (!logContents[1].trim().startsWith("{") || !logContents[1].trim().endsWith("}")){
+            return false;
+        }
 
         return true;
+
     }
 }

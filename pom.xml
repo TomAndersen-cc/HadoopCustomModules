@@ -12,33 +12,58 @@
     <!--当前project中包含的module-->
     <modules>
         <module>flume</module>
-        <module>log-collector</module>
+        <module>log-generator</module>
         <module>kafka</module>
+        <module>hive</module>
     </modules>
 
     <!--声明各个框架所用版本-->
     <properties>
         <slf4j.version>1.7.20</slf4j.version>
         <logback.version>1.0.7</logback.version>
+        <hadooop.version>2.7.7</hadooop.version>
+        <flume.version>1.8.0</flume.version>
+        <hive.version>2.3.0</hive.version>
+        <kafka.version>2.1.1</kafka.version>
     </properties>
-
 
 
     <!--在父类Maven中使用dependencyManagement声明依赖便于子类Module继承使用,也便于进行依赖版本控制-->
     <dependencyManagement>
         <dependencies>
+            <!-- 引入Hadoop新版本开发包 -->
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-common</artifactId>
+                <version>${hadooop.version}</version>
+            </dependency>
+            <!-- 引入Hadoop老版本开发包 -->
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-core</artifactId>
+                <version>1.2.1</version>
+            </dependency>
+            <!--引入hadoop-mapreduce客户端库 -->
+            <!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-mapreduce-client-core -->
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-mapreduce-client-core</artifactId>
+                <version>${hadooop.version}</version>
+            </dependency>
+
+
             <!--引入flume核心开发包-->
             <dependency>
                 <groupId>org.apache.flume</groupId>
                 <artifactId>flume-ng-core</artifactId>
-                <version>1.8.0</version>
+                <version>${flume.version}</version>
             </dependency>
 
             <!--阿里巴巴开源json解析框架-->
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
-                <version>1.2.51</version>
+                <version>1.2.62</version>
             </dependency>
 
             <!--日志生成框架-->
@@ -47,35 +72,46 @@
                 <artifactId>logback-core</artifactId>
                 <version>${logback.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
                 <version>${logback.version}</version>
             </dependency>
 
+            <!-- 导入Kafka客户端API依赖 -->
             <!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients -->
-            <!-- Kafka客户端API -->
             <dependency>
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka-clients</artifactId>
-                <version>2.1.1</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka -->
-            <!-- Kafka核心API -->
-            <dependency>
-                <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka_2.12</artifactId>
-                <version>2.1.1</version>
+                <version>${kafka.version}</version>
             </dependency>
 
-            <!--声明KafkaStreams依赖包-->
+            <!-- 导入Kafka核心API依赖 -->
+            <!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka -->
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka_2.11</artifactId>
+                <version>${kafka.version}</version>
+            </dependency>
+
+
+            <!--导入KafkaStreams依赖包-->
             <!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka-streams -->
             <dependency>
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka-streams</artifactId>
-                <version>2.1.1</version>
+                <version>${kafka.version}</version>
             </dependency>
 
+
+            <!--导入hive-exec依赖包-->
+            <!-- https://mvnrepository.com/artifact/org.apache.hive/hive-exec -->
+            <dependency>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>hive-exec</artifactId>
+                <version>${hive.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -87,6 +123,7 @@
                 <!--配置Maven项目compiler插件-->
                 <!--此工具只会打包原码编译后class文件-->
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>2.3.2</version>
                     <configuration>
@@ -99,7 +136,9 @@
                 <!--配置Maven项目assembly插件-->
                 <!--此工具会将全部依赖打包-->
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
+                    <version>2.2.2</version>
                     <configuration>
                         <descriptorRefs>
                             <descriptorRef>jar-with-dependencies</descriptorRef>
@@ -121,6 +160,41 @@
                         </execution>
                     </executions>
                 </plugin>
+                <!--配置Maven项目shade插件-->
+                <!--用于在打包时将相同的service文件中的内容整合,而不是覆盖-->
+                <!--PS:一般情况选不需要使用此插件,建议直接使用不带依赖的jar包-->
+                <!--<plugin>-->
+                    <!--<groupId>org.apache.maven.plugins</groupId>-->
+                    <!--<artifactId>maven-shade-plugin</artifactId>-->
+                    <!--<version>2.3</version>-->
+                    <!--<executions>-->
+                        <!--<execution>-->
+                            <!--<phase>package</phase>-->
+                            <!--<goals>-->
+                                <!--<goal>shade</goal>-->
+                            <!--</goals>-->
+                            <!--<configuration>-->
+                                <!--<transformers>-->
+                                    <!--<transformer-->
+                                            <!--implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>-->
+                                <!--</transformers>-->
+                            <!--</configuration>-->
+                        <!--</execution>-->
+                    <!--</executions>-->
+                    <!--<configuration>-->
+                        <!--<filters>-->
+                            <!--<filter>-->
+                                <!--<artifact>*:*</artifact>-->
+                                <!--<excludes>-->
+                                    <!--<exclude>META-INF/*.SF</exclude>-->
+                                    <!--<exclude>META-INF/*.DSA</exclude>-->
+                                    <!--<exclude>META-INF/*.RSA</exclude>-->
+                                <!--</excludes>-->
+                            <!--</filter>-->
+                        <!--</filters>-->
+                        <!--&lt;!&ndash; Additional configuration. &ndash;&gt;-->
+                    <!--</configuration>-->
+                <!--</plugin>-->
 
             </plugins>
         </pluginManagement>

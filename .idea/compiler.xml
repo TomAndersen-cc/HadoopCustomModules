@@ -7,16 +7,20 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="flume" />
+        <module name="hive" />
+        <module name="hive-" />
         <module name="kafka" />
-        <module name="log-collector" />
+        <module name="log-generator" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="8" />
+    <bytecodeTargetLevel target="8">
+      <module name="hive" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="flume" options="" />
-      <module name="log-collector" options="" />
+      <module name="log-generator" options="" />
     </option>
   </component>
 </project>

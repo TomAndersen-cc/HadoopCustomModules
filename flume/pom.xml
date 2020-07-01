@@ -34,10 +34,12 @@
         <plugins>
             <!--使用父类Maven配置的Maven项目编译器compiler插件-->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
             </plugin>
             <!--使用父类Maven配置的Maven项目汇编assembly插件-->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
             </plugin>
         </plugins>
